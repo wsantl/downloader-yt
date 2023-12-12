@@ -42,7 +42,9 @@ Este é um aplicativo simples em Flask para baixar vídeos e áudios do YouTube.
 6. Inicie o aplicativo Flask:
     ```bash
     python downloader-yt.py
-  Ou
+    
+Ou
+
     ```bash
     flask --app .\downloader.py run
 
