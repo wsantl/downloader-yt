@@ -45,8 +45,8 @@ Este é um aplicativo simples em Flask para baixar vídeos e áudios do YouTube.
     
 Ou
 
-    ```bash
     flask --app .\downloader.py run
+
 
 
 7. Abra o navegador e acesse http://localhost:5000.
