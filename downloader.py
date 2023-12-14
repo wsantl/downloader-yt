@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_file
 from pytube import YouTube
 import os
 import time
+import tempfile
 
 app = Flask(__name__)
 
@@ -28,13 +29,17 @@ def download_media(url, is_audio):
             media = yt.streams.get_highest_resolution()
             extension = 'mp4'
 
-        file_path = os.path.join(DOWNLOADS_DIR, f'{sanitized_title}_{timestamp}.{extension}')
+        temp_dir = tempfile.mkdtemp()
+        temp_file_path = os.path.join(temp_dir, f'temp_{sanitized_title}_{timestamp}.{extension}')
 
-        if not os.path.exists(file_path):
-            media.download(DOWNLOADS_DIR, f'temp_{extension}')
-            os.rename(os.path.join(DOWNLOADS_DIR, f'temp_{extension}'), file_path)
+        try:
+            if not os.path.exists(temp_file_path):
+                media.download(temp_dir, filename=f'temp_{extension}')
+                os.rename(os.path.join(temp_dir, f'temp_{extension}'), temp_file_path)
+        except Exception as e:
+            raise RuntimeError(f"Erro ao baixar o {( 'áudio' if is_audio else 'vídeo')} : {str(e)}")
 
-        return file_path, title
+        return temp_file_path, title
 
     except Exception as e:
         raise RuntimeError(f"Erro ao baixar o {( 'áudio' if is_audio else 'vídeo')} : {str(e)}")
@@ -46,10 +51,10 @@ def index():
 
         if 'audio' in request.form:
             audio_path, title = download_media(url, is_audio=True)
-            return send_file(audio_path, as_attachment=True, download_name=f"{title}.mp3")
+            return send_file(audio_path, as_attachment=True, download_name=f"{title}.mp3", mimetype='audio/mpeg')
         elif 'video' in request.form:
             video_path, title = download_media(url, is_audio=False)
-            return send_file(video_path, as_attachment=True, download_name=f"{title}.mp4")
+            return send_file(video_path, as_attachment=True, download_name=f"{title}.mp4", mimetype='video/mp4')
 
     return render_template('index.html')
 
