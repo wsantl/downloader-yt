@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, send_file
-from pytube import YouTube
+from yt_dlp import YoutubeDL
 import os
 import time
 import tempfile
@@ -17,32 +17,28 @@ def sanitize_filename(title):
 
 def download_media(url, is_audio):
     try:
-        yt = YouTube(url)
-        title = yt.title
-        sanitized_title = sanitize_filename(title)
-        timestamp = int(time.time())
+        ydl_opts = {
+            'format': 'bestaudio/best' if is_audio else 'best',
+            'noplaylist': True,
+            'outtmpl': f'{tempfile.gettempdir()}/%(title)s.%(ext)s',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }] if is_audio else []
+        }
 
-        if is_audio:
-            media = yt.streams.filter(only_audio=True).first()
-            extension = 'mp3'
-        else:
-            media = yt.streams.get_highest_resolution()
-            extension = 'mp4'
+        with YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_path = ydl.prepare_filename(info_dict)
+            title = sanitize_filename(info_dict.get('title', 'unknown'))
+            if is_audio:
+                file_path = f"{file_path.rsplit('.', 1)[0]}.mp3"
 
-        temp_dir = tempfile.mkdtemp()
-        temp_file_path = os.path.join(temp_dir, f'temp_{sanitized_title}_{timestamp}.{extension}')
-
-        try:
-            if not os.path.exists(temp_file_path):
-                media.download(temp_dir, filename=f'temp_{extension}')
-                os.rename(os.path.join(temp_dir, f'temp_{extension}'), temp_file_path)
-        except Exception as e:
-            raise RuntimeError(f"Erro ao baixar o {( 'áudio' if is_audio else 'vídeo')} : {str(e)}")
-
-        return temp_file_path, title
+        return file_path, title
 
     except Exception as e:
-        raise RuntimeError(f"Erro ao baixar o {( 'áudio' if is_audio else 'vídeo')} : {str(e)}")
+        raise RuntimeError(f"Erro ao baixar o {'áudio' if is_audio else 'vídeo'} : {str(e)}")
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
