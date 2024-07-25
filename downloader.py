@@ -18,9 +18,10 @@ def sanitize_filename(title):
 def download_media(url, is_audio):
     try:
         ydl_opts = {
-            'format': 'bestaudio/best' if is_audio else 'best',
+            'format': 'bestaudio/best' if is_audio else 'bestvideo+bestaudio/best',
             'noplaylist': True,
             'outtmpl': f'{tempfile.gettempdir()}/%(title)s.%(ext)s',
+            'merge_output_format': 'mp4' if not is_audio else None,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
