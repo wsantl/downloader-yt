@@ -24,11 +24,14 @@ Este é um aplicativo simples em Flask para baixar vídeos e áudios do YouTube.
     python -m venv venv
 
 
-4. Ative o ambiente virtual:
-   No Windows:
+4. Ative o ambiente virtual no Windows:
       ```bash
-      . .\venv\Scripts\activate
+    .\venv\Scripts\activate
 
+5. Ative o ambiente virtual no Linux:
+      ```bash
+   .venv\Scripts\activate
+   
 6. Instale as dependências:
 
    ```bash
@@ -38,7 +41,7 @@ Este é um aplicativo simples em Flask para baixar vídeos e áudios do YouTube.
 7. Inicie o aplicativo Flask:
 
    ```bash
-   python downloader-yt.py
+   python downloader.py
     
 Ou
 
